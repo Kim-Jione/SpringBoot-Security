@@ -1,6 +1,5 @@
 package com.example.jwt.model;
 
-
 import javax.persistence.*;
 
 import lombok.Data;
@@ -14,7 +13,7 @@ import java.util.List;
 public class Users {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE)
 	private long id;
 	private String username;
 	private String password;

@@ -11,11 +11,16 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
 import com.example.jwt.config.jwt.JwtAuthenticationFilter;
+import com.example.jwt.config.jwt.JwtAuthorizationFilter;
+import com.example.jwt.repository.UserRepository;
 
 // 현재 상태 : 세션을 사용하지 않고 있고 시큐리티를 직접 만들었고 현재로서는 모든 페이지에 접근이 가능하다
 @Configuration
 @EnableWebSecurity // 시큐리티 활성화 -> 기본 스프링 필터체인에 등록
 public class SecurityConfig {
+
+	@Autowired
+	private UserRepository userRepository;
 
 	@Autowired
 	private CorsConfig corsConfig;
@@ -45,9 +50,10 @@ public class SecurityConfig {
 		@Override
 		public void configure(HttpSecurity http) throws Exception {
 			AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
-			http.addFilter(corsConfig.corsFilter())
-					.addFilter(new JwtAuthenticationFilter(authenticationManager));
+			http
+					.addFilter(corsConfig.corsFilter())
+					.addFilter(new JwtAuthenticationFilter(authenticationManager))
+					.addFilter(new JwtAuthorizationFilter(authenticationManager, userRepository));
 		}
 	}
-
 }
