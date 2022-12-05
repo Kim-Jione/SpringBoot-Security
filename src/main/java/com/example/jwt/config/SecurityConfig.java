@@ -10,8 +10,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
-import com.example.jwt.config.SecurityConfig.MyCustomDsl;
-
+import com.example.jwt.config.jwt.JwtAuthenticationFilter;
 
 // 현재 상태 : 세션을 사용하지 않고 있고 시큐리티를 직접 만들었고 현재로서는 모든 페이지에 접근이 가능하다
 @Configuration
@@ -28,11 +27,11 @@ public class SecurityConfig {
 				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 사용 안함
 				.and()
 				.formLogin().disable() // jwt 서버이기 때문에 form태그 로그인 방식 사용X
-				.httpBasic().disable() // ==== 여기까지는 고정
-				.apply(new MyCustomDsl()) // 커스텀 필터 등록 
+				.httpBasic().disable() // http 기본 인증방식인데 암호화가 안되서 id, pw 노출되면 위험, ==== 여기까지는 고정
+				.apply(new MyCustomDsl()) // 커스텀 필터 등록
 				.and()
 				.authorizeRequests(authroize -> authroize.antMatchers("/api/v1/user/**") // 이 주소로
-				.access("hasRole('ROLE_USER') or hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
+						.access("hasRole('ROLE_USER') or hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
 						// user, manager, admin 가능
 						.antMatchers("/api/v1/manager/**")
 						.access("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
@@ -46,7 +45,8 @@ public class SecurityConfig {
 		@Override
 		public void configure(HttpSecurity http) throws Exception {
 			AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
-			http.addFilter(corsConfig.corsFilter());
+			http.addFilter(corsConfig.corsFilter())
+					.addFilter(new JwtAuthenticationFilter(authenticationManager));
 		}
 	}
 
